@@ -51,10 +51,30 @@ const deleteUsuarioById = (id) => {
   return result;
 };
 
+// ✅ Nuevo método auxiliar que usa getLastUsuario para App.js
+const getUser = async () => {
+  try {
+    const usuario = getLastUsuario();
+    if (usuario && usuario.imagen) {
+      return {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        imageUri: usuario.imagen, // 🔥 importante: esta clave la usa App.js
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error al obtener usuario:', error);
+    return null;
+  }
+};
+
 export default {
   initDB,
   upsertUsuario,
   getUsuarioById,
-  getLastUsuario, // ✅ ahora sí existe
-  deleteUsuarioById
+  getLastUsuario,
+  deleteUsuarioById,
+  getUser, // ✅ agregado
 };

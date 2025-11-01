@@ -1,29 +1,46 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
+import Formulario from '../components/Formulario';
+import sqliteService from '../services/sqliteService';
 
 export default function ProfileScreen({ route }) {
-  // Recibimos los datos del usuario vía route.params
-  const { nombre, email, imagen } = route.params || {};
+  const [usuario, setUsuario] = useState(route.params || null);
+
+  useEffect(() => {
+    if (!usuario) {
+      const lastUser = sqliteService.getLastUsuario();
+      if (lastUser) setUsuario(lastUser);
+    }
+  }, []);
 
   return (
-    <View style={styles.container}>
-      {/* Imagen de perfil */}
-      {imagen ? (
-        <Image source={{ uri: imagen }} style={styles.avatar} />
+    <ScrollView contentContainerStyle={styles.container}>
+      {usuario?.imagen ? (
+        <Image source={{ uri: usuario.imagen }} style={styles.avatar} />
       ) : (
         <Image source={require('../assets/default-avatar.png')} style={styles.avatar} />
       )}
 
-      {/* Datos del usuario */}
-      <Text style={styles.nombre}>{nombre}</Text>
-      <Text style={styles.email}>{email}</Text>
-    </View>
+      {usuario && (
+        <>
+          <Text style={styles.nombre}>{usuario.nombre}</Text>
+          <Text style={styles.email}>{usuario.email}</Text>
+        </>
+      )}
+
+      {/* Aquí mostramos el formulario solo en la pantalla de perfil */}
+      <Formulario onUsuarioUpdate={() => {
+        const updatedUser = sqliteService.getLastUsuario();
+        if (updatedUser) setUsuario(updatedUser);
+      }} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  container: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
   avatar: { width: 150, height: 150, borderRadius: 75, marginBottom: 20 },
   nombre: { fontSize: 22, fontWeight: 'bold', marginBottom: 5 },
-  email: { fontSize: 16, color: '#666' },
+  email: { fontSize: 16, color: '#666', marginBottom: 20 },
 });
+
